@@ -3,6 +3,7 @@ package com.cdqf.plantgps_activity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,13 +12,23 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cdqf.plantgps.R;
+import com.cdqf.plantgps_image.PersonalDilogFragment;
+import com.cdqf.plantgps_image.ShelvesImageFind;
 import com.cdqf.plantgps_map.AddrStrFind;
 import com.cdqf.plantgps_map.BaiduLBS;
 import com.cdqf.plantgps_state.BaseActivity;
+import com.cdqf.plantgps_state.Preferences;
+import com.cdqf.plantgps_state.State;
 import com.cdqf.plantgps_txmap.TXMapLoad;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.xw.repo.XEditText;
+
+import java.util.List;
 
 import de.greenrobot.event.EventBus;
 
@@ -32,6 +43,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private EventBus eventBus = EventBus.getDefault();
 
     private Context context = null;
+
+    private State state = State.getState();
+
+    private ImageLoader imageLoader = ImageLoader.getInstance();
 
     //查看
     private TextView tvGpsView = null;
@@ -51,7 +66,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     //保存
     private TextView tvGpsSave = null;
 
+    //刷新
+    private TextView tvGpsPull = null;
+
     private ImageView ivGpsManual = null;
+
+    private String imageFile = "";
+
+    private Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,8 +101,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         if (!eventBus.isRegistered(this)) {
             eventBus.register(this);
         }
+        imageLoader = state.getImageLoader(context);
         String error = TXMapLoad.init(MainActivity.this);
         Log.e(TAG, "---error---" + error);
+        if (Preferences.getGPS(context) != null) {
+            String gps = Preferences.getGPS(context);
+            List<Gps> gpsList = gson.fromJson(gps, new TypeToken<List<Gps>>() {
+            }.getType());
+            state.setGpsList(gpsList);
+            Log.e(TAG, "---gps---" + gps);
+        } else {
+            Log.e(TAG, "---gps---" + Preferences.getGPS(context));
+        }
     }
 
     private void initView() {
@@ -105,6 +137,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         //图片
         ivGpsManual = this.findViewById(R.id.iv_gps_manual);
 
+        //刷新
+        tvGpsPull = this.findViewById(R.id.tv_gps_pull);
+
 
     }
 
@@ -116,6 +151,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         tvGpsView.setOnClickListener(this);
         tvGpsSave.setOnClickListener(this);
         ivGpsManual.setOnClickListener(this);
+        tvGpsPull.setOnClickListener(this);
     }
 
     private void initBack() {
@@ -157,10 +193,51 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_gps_view:
+                Intent intent = new Intent(MainActivity.this, ImageActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.tv_gps_pull:
+                tvGpsLongitude.setText("");
+                tvGpsLatitude.setText("");
+                tvGpsAddress.setText("");
+                xetGpsManual.setText("");
+                ivGpsManual.setImageResource(R.mipmap.wodedingdan);
+                TXMapLoad.remove();
+                TXMapLoad.init(MainActivity.this);
                 break;
             case R.id.tv_gps_save:
+                //保存
+                //经度
+                String longitude = tvGpsLongitude.getText().toString();
+                //纬度
+                String latitude = tvGpsLatitude.getText().toString();
+                //地址
+                String address = tvGpsAddress.getText().toString();
+                //景名
+                String name = xetGpsManual.getText().toString();
+                //图片地址
+                if (longitude.length() != 0 && latitude.length() != 0 && address.length() != 0 && name.length() != 0 && imageFile.length() != 0) {
+                    Gps gps = new Gps(longitude, latitude, address, name, imageFile);
+                    state.getGpsList().add(gps);
+                    String gpsList = gson.toJson(state.getGpsList(), new TypeToken<List<Gps>>() {
+                    }.getType());
+                    Preferences.setGps(context, gpsList);
+                    Log.e(TAG, "---gps采集---" + gpsList);
+                    Toast.makeText(context, "保存成功", Toast.LENGTH_SHORT).show();
+                    tvGpsLongitude.setText("");
+                    tvGpsLatitude.setText("");
+                    tvGpsAddress.setText("");
+                    xetGpsManual.setText("");
+                    ivGpsManual.setImageResource(R.mipmap.wodedingdan);
+                    TXMapLoad.remove();
+                    TXMapLoad.init(MainActivity.this);
+                } else {
+                    Toast.makeText(context, "条件不满足", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.iv_gps_manual:
+                PersonalDilogFragment personalDilogFragment = new PersonalDilogFragment();
+                personalDilogFragment.show(getSupportFragmentManager(), "选择");
                 break;
         }
     }
@@ -222,5 +299,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         tvGpsLongitude.setText(a.longitude + "");
         tvGpsLatitude.setText(a.latitude + "");
         tvGpsAddress.setText(a.load);
+    }
+
+    public void onEventMainThread(ShelvesImageFind s) {
+        imageFile = s.file;
+        imageLoader.displayImage("file://" + imageFile, ivGpsManual, state.getImageLoaderOptions(R.mipmap.wodedingdan, R.mipmap.wodedingdan, R.mipmap.wodedingdan
+        ));
+        Log.e(TAG, "---图片文件---" + s.file);
     }
 }

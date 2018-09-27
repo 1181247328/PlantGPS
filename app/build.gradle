@@ -3,6 +3,8 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.0"
+    aaptOptions.cruncherEnabled = false
+    aaptOptions.useNewCruncher = false
     defaultConfig {
         applicationId "com.cdqf.plantgps"
         minSdkVersion 15
@@ -58,6 +60,14 @@ repositories {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
     implementation 'com.android.support:appcompat-v7:28.0.0-rc01'
     implementation 'com.xw.repo:xedittext:2.0.0'
+    implementation project(':SimpleAndroidImageCrop')
+    implementation project(':xprogressdialog')
+    implementation 'com.android.support:design:28.0.0-rc01'
+    implementation 'com.android.support:multidex:1.0.1'
+    implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 }

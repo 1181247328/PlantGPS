@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PlantGPS.iml" filepath="$PROJECT_DIR$/PlantGPS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SimpleAndroidImageCrop/SimpleAndroidImageCrop.iml" filepath="$PROJECT_DIR$/SimpleAndroidImageCrop/SimpleAndroidImageCrop.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/xprogressdialog/xprogressdialog.iml" filepath="$PROJECT_DIR$/xprogressdialog/xprogressdialog.iml" />
     </modules>
   </component>
 </project>
