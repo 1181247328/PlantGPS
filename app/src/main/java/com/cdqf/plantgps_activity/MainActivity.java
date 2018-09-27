@@ -9,12 +9,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cdqf.plantgps.R;
 import com.cdqf.plantgps_map.AddrStrFind;
 import com.cdqf.plantgps_map.BaiduLBS;
 import com.cdqf.plantgps_state.BaseActivity;
+import com.cdqf.plantgps_txmap.TXMapLoad;
 import com.xw.repo.XEditText;
 
 import de.greenrobot.event.EventBus;
@@ -49,6 +51,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     //保存
     private TextView tvGpsSave = null;
 
+    private ImageView ivGpsManual = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +79,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         if (!eventBus.isRegistered(this)) {
             eventBus.register(this);
         }
+        String error = TXMapLoad.init(MainActivity.this);
+        Log.e(TAG, "---error---" + error);
     }
 
     private void initView() {
@@ -95,6 +101,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         //保存
         tvGpsSave = (TextView) this.findViewById(R.id.tv_gps_save);
+
+        //图片
+        ivGpsManual = this.findViewById(R.id.iv_gps_manual);
+
+
     }
 
     private void initAdapter() {
@@ -104,10 +115,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private void initListener() {
         tvGpsView.setOnClickListener(this);
         tvGpsSave.setOnClickListener(this);
+        ivGpsManual.setOnClickListener(this);
     }
 
     private void initBack() {
-        BaiduLBS.init(MainActivity.this);
+//        BaiduLBS.init(MainActivity.this);
+
     }
 
     /**
@@ -146,6 +159,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             case R.id.tv_gps_view:
                 break;
             case R.id.tv_gps_save:
+                break;
+            case R.id.iv_gps_manual:
                 break;
         }
     }
@@ -194,11 +209,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     public void onEventMainThread(AddrStrFind a) {
-        if (a.map.getCity() != null) {
-            Log.e(TAG, "---" + a.map.getLongitude() + "---" + a.map.getLatitude());
-            tvGpsLongitude.setText(a.map.getLongitude() + "");
-            tvGpsLatitude.setText(a.map.getLatitude() + "");
-            tvGpsAddress.setText(a.map.getLocation());
-        }
+//        if (a.map.getCity() != null) {
+//            Log.e(TAG, "---" + a.map.getLongitude() + "---" + a.map.getLatitude());
+//            tvGpsLongitude.setText(a.map.getLongitude() + "");
+//            tvGpsLatitude.setText(a.map.getLatitude() + "");
+//            tvGpsAddress.setText(a.map.getLocation());
+//        }
+    }
+
+    public void onEventMainThread(com.cdqf.plantgps_txmap.LoadFind a) {
+        Log.e(TAG, "---经度---" + a.longitude + "---纬度---" + a.latitude);
+        tvGpsLongitude.setText(a.longitude + "");
+        tvGpsLatitude.setText(a.latitude + "");
+        tvGpsAddress.setText(a.load);
     }
 }

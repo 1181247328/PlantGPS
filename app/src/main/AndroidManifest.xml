@@ -54,6 +54,10 @@
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="hl5vV7K52ox8f4L4vHV1BK1lOkuBxKrI" />
 
+        <meta-data
+            android:name="TencentMapSDK"
+            android:value="MY6BZ-A2K34-IXRU4-XT5AB-3CSS7-4FBEQ" />
+
     </application>
 
 </manifest>
